@@ -6,6 +6,8 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -16,11 +18,14 @@ public class Attendance  implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	private static SimpleDateFormat sdf = new SimpleDateFormat ("yyyy-MM-dd HH:mm"); 
 	private int childID;
 	private Date dateIn;
 	private Date dateOut;
 	private int attendanceID;
 	private int minutes;
+	private Double rate;
+	private Double cost;
 	private static final String PATH = "attendanceFile.sav";
 
 	public void setChildID (int ID){
@@ -49,12 +54,38 @@ public class Attendance  implements Serializable {
 		this.minutes = (int) ((this.dateOut.getTime() - this.dateIn.getTime()) / 1000 / 60);
 	}
 	public void setDateOut (){
-		this.dateOut = new Date();
+		this.dateOut = rounded(new Date());
 		this.minutes = (int) ((this.dateOut.getTime() - this.dateIn.getTime()) / 1000 / 60);
-		System.out.println("minutes = "+this.minutes);
-		System.out.println("seconds = "+((this.dateOut.getTime() - this.dateIn.getTime())));
-
+		this.minutes = (int) ((this.dateOut.getTime() - this.dateIn.getTime()) / 1000 / 60);
+		this.rate = RateCard.getApplicableRate(ChildRegister.rateCardList, this.childID, this.dateIn).hourRate;
+		this.cost = this.rate * (minutes/60);
+		if (ChildRegister.debug){System.out.println("minutes = "+this.minutes);}
+		if (ChildRegister.debug){System.out.println("seconds = "+((this.dateOut.getTime() - this.dateIn.getTime())));}
 	}
+
+	@SuppressWarnings("deprecation")
+	public Date rounded (Date date){
+		int mins = date.getMinutes();
+		int hours = date.getHours();
+		int roundMins = 0;
+		int roundHours = 0;
+		Date roundDate = null;
+		roundHours = hours;
+		if (mins >= 0 && mins <= 7) {roundMins = 0;}  
+		if (mins >= 8 && mins <= 22) {roundMins = 15;}  
+		if (mins >= 23 && mins <= 37) {roundMins = 30;}  
+		if (mins >= 38 && mins <= 52) {roundMins = 45;} 
+		if (mins >= 53 ) {roundMins = 45; roundHours = hours + 1;} 
+		
+		try{
+			roundDate = sdf.parse(dateOut.getYear()+"-"+dateOut.getMonth()+"-"+dateOut.getDay()+" "+roundHours+":"+roundMins);
+		}
+		catch (Exception e){System.out.println("failed to convert date "+dateOut.getYear()+"-"+dateOut.getMonth()+"-"+dateOut.getDay()+" "+roundHours+":"+roundMins);
+		}
+		return roundDate;
+		
+	}
+	
 	public Date getDateOut (){
 		return this.dateOut;
 	}
@@ -113,12 +144,23 @@ public class Attendance  implements Serializable {
 			ObjectOutputStream oos = new ObjectOutputStream(fout);
 			oos.writeObject(attendanceIn);
 			oos.close();
-			System.out.println("Closed file in serializeChildList");
+			if (ChildRegister.debug){System.out.println("Closed file in serializeChildList");}
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
 	}
 
+	public static void ListAttendances (ArrayList<Attendance> list){
+		System.out.println("");
+		System.out.println("===============");
+		System.out.println("= Attendances =");
+		System.out.println("===============");
+		for (Attendance att : list){
+			System.out.println(att);
+		}
+
+	}
+	
 	public static ArrayList<Attendance> deserializeAttendanceList( ){
 
 		ArrayList<Attendance> returnList = new ArrayList<Attendance>();
@@ -135,8 +177,8 @@ public class Attendance  implements Serializable {
 				System.out.println("No Attendances returned in the list");
 			}
 			else {
-				System.out.println("first record from deserialized list : "+returnList.get(0));
-				System.out.println("total records read= "+returnList.size());
+				if (ChildRegister.debug){System.out.println("first record from deserialized list : "+returnList.get(0));}
+				if (ChildRegister.debug){System.out.println("total records read= "+returnList.size());}
 			}
 
 			maxId = returnList.size();
