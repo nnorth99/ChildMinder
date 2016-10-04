@@ -7,8 +7,6 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -26,7 +24,7 @@ public class RateCard  implements Serializable {
 	// Local class variables 
 	//
 	int childID;
-	float hourRate;
+	Double hourRate;
 	LocalDate startDate;
 	LocalDate endDate;
 
@@ -36,13 +34,13 @@ public class RateCard  implements Serializable {
 	RateCard (){
 	}
 
-	RateCard (float rate, LocalDate startDate){
+	RateCard (Double rate, LocalDate startDate){
 		this.setChildID(0);
 		this.setHourRate(rate);
 		this.setStartDate(startDate);
 	}
 
-	RateCard (int childID, float rate, LocalDate startDate){
+	RateCard (int childID, Double rate, LocalDate startDate){
 		this(rate, startDate);
 		this.setChildID(childID);
 	}
@@ -57,10 +55,10 @@ public class RateCard  implements Serializable {
 		return this.childID;
 	}
 
-	public void setHourRate (float hourRate){
+	public void setHourRate (Double hourRate){
 		this.hourRate = hourRate;
 	}
-	public float getHourRate (){
+	public Double getHourRate (){
 		return this.hourRate;
 	}
 
@@ -104,14 +102,14 @@ public class RateCard  implements Serializable {
 				ObjectOutputStream oos = new ObjectOutputStream(fout);
 				oos.writeObject(rateIn);
 				oos.close();
-				System.out.println("Closed file in serializeRateCardList");
+				if (ChildRegister.debug){System.out.println("Closed file in serializeRateCardList");}
 			}
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
 	}
 
-	public static void createNewRate  (int childID, float rate, LocalDate startDate, ArrayList<RateCard> rateArray){
+	public static void createNewRate  (int childID, Double rate, LocalDate startDate, ArrayList<RateCard> rateArray){
 
 		// close off old default rate where present
 		for (RateCard rateCard : rateArray ){
@@ -129,21 +127,30 @@ public class RateCard  implements Serializable {
 
 	}
 
-	public static void createNewRate  (float rate, LocalDate startDate, ArrayList<RateCard> rateArray){
+	public static void createNewRate  (Double rate, LocalDate startDate, ArrayList<RateCard> rateArray){
 		// create the default rate if no child supplied
 		createNewRate (0, rate, startDate, rateArray);
 	}
 
-	public static void setDefaultRate (float rate, LocalDate startDate, ArrayList<RateCard> rateArray){
+	public static void setDefaultRate (Double rate, LocalDate startDate, ArrayList<RateCard> rateArray){
 		createNewRate (0, rate, startDate, rateArray); 
 
 	}
 
+	public static void ListRateCards (ArrayList<RateCard> list ){
+		System.out.println("");
+		System.out.println("=========");
+		System.out.println("= Rates =");
+		System.out.println("=========");
+		for (RateCard rate : list){
+			System.out.println(rate);
+		}
+	}
 	public static ArrayList<RateCard> deserializeRateCardList( ){
 
 		ArrayList<RateCard> returnList = new ArrayList<RateCard>();
 		try{
-			System.out.println("deserialize rates");
+			if (ChildRegister.debug){System.out.println("deserialize rates");}
 
 			FileInputStream fin = new FileInputStream(PATH);
 			ObjectInputStream ois = new ObjectInputStream(fin);   
@@ -152,7 +159,7 @@ public class RateCard  implements Serializable {
 			returnList.addAll(getList);
 			ois.close();
 
-			System.out.println("total rate records read= "+returnList.size());
+			if (ChildRegister.debug){System.out.println("total rate records read= "+returnList.size());}
 		}
 		catch (FileNotFoundException e) {
 			System.out.println("File doesn't exist");
@@ -164,5 +171,16 @@ public class RateCard  implements Serializable {
 
 		return returnList;
 	}
+	
+	public static void clearRateCardListFile(){
+		ArrayList<RateCard> blankList = new ArrayList<RateCard>();
+		serializeRateCardList(blankList);
+	}
 
+	public static RateCard getApplicableRate(ArrayList<RateCard> rates, int childID, Date dateIn){
+		for (RateCard rate : rates){
+			if (rate.childID = childID && 
+		}
+		return
+	}
 }
