@@ -15,7 +15,7 @@ public class Child  implements Serializable{
 	// static variables
 	//
 	private static final String PATH = "childFile.sav";
-	public static int maxId = 0;
+	private static int maxId = 0;
 
 
 	//
@@ -27,6 +27,12 @@ public class Child  implements Serializable{
 	String firstName;
 	String contactDetails;
 
+	public Child (String forename, String surname){
+		childID = ++maxId;
+		firstName = forename;
+		lastName = surname;
+		
+	}
 
 	//
 	// getters and setters
@@ -98,7 +104,7 @@ public class Child  implements Serializable{
 			ObjectOutputStream oos = new ObjectOutputStream(fout);
 			oos.writeObject(kidsIn);
 			oos.close();
-			System.out.println("Closed file in serializeChildList");
+			if (ChildRegister.debug){System.out.println("Closed file in serializeChildList");}
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -109,7 +115,7 @@ public class Child  implements Serializable{
 
 		ArrayList<Child> returnList = new ArrayList<Child>();
 		try{
-			System.out.println("deserialize children");
+			if (ChildRegister.debug){System.out.println("deserialize children");}
 
 			FileInputStream fin = new FileInputStream(PATH);
 			ObjectInputStream ois = new ObjectInputStream(fin);   
@@ -118,7 +124,8 @@ public class Child  implements Serializable{
 			returnList.addAll(getList);
 			ois.close();
 
-			System.out.println("total child records read= "+returnList.size());
+			if (ChildRegister.debug){System.out.println("total child records read= "+returnList.size());}
+			maxId = returnList.size();
 		}
 		catch (FileNotFoundException e) {
 			System.out.println("File doesn't exist");
@@ -129,6 +136,16 @@ public class Child  implements Serializable{
 		}
 
 		return returnList;
+	}
+	
+	public static void ListChildren (ArrayList<Child> list){
+		System.out.println("");
+		System.out.println("============");
+		System.out.println("= Children =");
+		System.out.println("============");
+		for (Child kid : list){
+			System.out.println(kid);
+		}
 	}
 
 	public static void clearChildListFile(){
@@ -144,7 +161,6 @@ public class Child  implements Serializable{
 		else {
 			ChildRegister.attendanceList.add(new Attendance(this.childID));
 		}
-
 	}
 
 	public void checkIn (Child kid, Date inDate){
@@ -170,7 +186,6 @@ public class Child  implements Serializable{
 
 
 	public boolean hasOpenAttendance() {
-		System.out.println(ChildRegister.attendanceList.size());
 		if (ChildRegister.attendanceList.size()>0){
 			for (Attendance a : ChildRegister.attendanceList){
 				if (a.getChildID() == this.childID && a.getDateOut() == null){
@@ -182,7 +197,7 @@ public class Child  implements Serializable{
 	}
 
 	public Attendance getOpenAttendance() {
-		System.out.println(ChildRegister.attendanceList.size());
+		if (ChildRegister.debug){System.out.println(ChildRegister.attendanceList.size());}
 		if (ChildRegister.attendanceList.size()>0){
 			for (Attendance a : ChildRegister.attendanceList){
 				if (a.getChildID() == this.childID && a.getDateOut() == null){
@@ -192,8 +207,6 @@ public class Child  implements Serializable{
 		}
 		return null;
 	}
-
-
 
 }
 
