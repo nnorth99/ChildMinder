@@ -8,7 +8,9 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 public class RateCard  implements Serializable {
@@ -92,18 +94,11 @@ public class RateCard  implements Serializable {
 
 		try{
 
-			String path = "C:" + File.separator + "ChildMinderSaveFiles" + File.separator + "rateFile.sav";
-			path = "rateFile.sav";
-
-			if (rateIn.size()==0) {		System.out.println("No rates in list to serialize");
-			}
-			else {
-				FileOutputStream fout = new FileOutputStream(path);
-				ObjectOutputStream oos = new ObjectOutputStream(fout);
-				oos.writeObject(rateIn);
-				oos.close();
-				if (ChildRegister.debug){System.out.println("Closed file in serializeRateCardList");}
-			}
+			FileOutputStream fout = new FileOutputStream(PATH);
+			ObjectOutputStream oos = new ObjectOutputStream(fout);
+			oos.writeObject(rateIn);
+			oos.close();
+			if (ChildRegister.debug){System.out.println("Closed file in serializeRateCardList");}
 		}catch(Exception ex){
 			ex.printStackTrace();
 		}
@@ -171,16 +166,29 @@ public class RateCard  implements Serializable {
 
 		return returnList;
 	}
-	
+
 	public static void clearRateCardListFile(){
 		ArrayList<RateCard> blankList = new ArrayList<RateCard>();
 		serializeRateCardList(blankList);
 	}
 
-	public static RateCard getApplicableRate(ArrayList<RateCard> rates, int childID, Date dateIn){
+	public static RateCard getApplicableRate(ArrayList<RateCard> rates, int childID, Calendar dateIn) throws Exception{
+		// convert date provided to LocalDate
+		LocalDate dateInLocal = dateIn.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+
+		// look for match by child first
 		for (RateCard rate : rates){
-			if (rate.childID = childID && 
+			if (rate.childID == childID && (dateInLocal.isAfter(rate.startDate) && dateInLocal.isBefore(rate.endDate) )){
+				return rate;
+			}
 		}
-		return
+		// None found - look for default rate
+		for (RateCard rate : rates){
+			if (rate.childID == 0 && (dateInLocal.isAfter(rate.startDate) && dateInLocal.isBefore(rate.endDate) )){
+				return rate;
+			}
+		}
+		// No match
+		throw new Exception();
 	}
 }
