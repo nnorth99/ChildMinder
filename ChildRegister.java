@@ -13,7 +13,7 @@ public class ChildRegister
 
 	public static void main( String[] args ) {
 		for (String arg : args){
-			if (arg == "-d"){
+			if (arg.equals("-d")){
 				debug = true;
 			}
 		}
@@ -28,6 +28,7 @@ public class ChildRegister
 
 		while (swValue != 0){
 			// Display menu graphics
+			if (debug){System.out.println("** debug mode **");}
 			System.out.println("=========================================");
 			System.out.println("|         MENU SELECTION                |");
 			System.out.println("=========================================");
@@ -145,6 +146,7 @@ public class ChildRegister
 					Child.clearChildListFile();
 					Attendance.clearAttendanceListFile();
 					RateCard.clearRateCardListFile();
+					load();  // reload the empty files, i.e. empty out the arrays
 				}
 				break;
 			case 9:
